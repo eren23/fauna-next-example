@@ -1,65 +1,208 @@
-import Head from 'next/head'
-import styles from '../styles/Home.module.css'
+import { useEffect, useState } from "react";
+import {
+  Heading,
+  Flex,
+  Stack,
+  Box,
+  Text,
+  Button,
+  Input,
+  FormControl,
+  FormLabel,
+  RadioGroup,
+  Radio,
+} from "@chakra-ui/core";
+import TableRow from "../components/customerData";
 
 export default function Home() {
+  const [data, setData] = useState([]);
+  const [formData, updateFormData] = useState({});
+  const initialData = Object.freeze({
+    firstName: "",
+    lastName: "",
+    streetAddress: "",
+    city: "",
+    state: "",
+    zipCode: "",
+    phoneNumber: "",
+    cardType: "",
+    cardNumber: null,
+  });
+
+  async function getData() {
+    const res = await fetch("/api/getCustomers", { cache: "no-store" });
+    const newData = await res.json();
+    setData(newData);
+  }
+
+  useEffect(() => {
+    getData();
+  }, []);
+
+  const handleChange = (e) => {
+    updateFormData({
+      ...formData,
+      [e.target.name]: e.target.value,
+    });
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    addCustomer();
+  };
+
   return (
-    <div className={styles.container}>
-      <Head>
-        <title>Create Next App</title>
-        <link rel="icon" href="/favicon.ico" />
-      </Head>
-
-      <main className={styles.main}>
-        <h1 className={styles.title}>
-          Welcome to <a href="https://nextjs.org">Next.js!</a>
-        </h1>
-
-        <p className={styles.description}>
-          Get started by editing{' '}
-          <code className={styles.code}>pages/index.js</code>
-        </p>
-
-        <div className={styles.grid}>
-          <a href="https://nextjs.org/docs" className={styles.card}>
-            <h3>Documentation &rarr;</h3>
-            <p>Find in-depth information about Next.js features and API.</p>
-          </a>
-
-          <a href="https://nextjs.org/learn" className={styles.card}>
-            <h3>Learn &rarr;</h3>
-            <p>Learn about Next.js in an interactive course with quizzes!</p>
-          </a>
-
-          <a
-            href="https://github.com/vercel/next.js/tree/master/examples"
-            className={styles.card}
-          >
-            <h3>Examples &rarr;</h3>
-            <p>Discover and deploy boilerplate example Next.js projects.</p>
-          </a>
-
-          <a
-            href="https://vercel.com/import?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-            className={styles.card}
-          >
-            <h3>Deploy &rarr;</h3>
-            <p>
-              Instantly deploy your Next.js site to a public URL with Vercel.
-            </p>
-          </a>
-        </div>
-      </main>
-
-      <footer className={styles.footer}>
-        <a
-          href="https://vercel.com?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Powered by{' '}
-          <img src="/vercel.svg" alt="Vercel Logo" className={styles.logo} />
-        </a>
-      </footer>
-    </div>
-  )
+    <Box>
+      <Heading as="h1" my={2} textAlign="center">
+        NextJS, Fauna, Serverless
+      </Heading>
+      <Heading as="h3" my={2} textAlign="center">
+        Customer DATA
+      </Heading>
+      <Flex mt={12} align="center" justify="center">
+        <Stack>
+          <Heading mb={6} as="h4">
+            Name:
+          </Heading>
+          <Heading mb={6} as="h4">
+            Phone:
+          </Heading>
+          <Heading mb={6} as="h4">
+            Credit Card:
+          </Heading>
+        </Stack>
+        {data.length > 0 ? (
+          data.map((d) => (
+            <TableRow
+              key={d.data.telephone}
+              creditCard={d.data.creditCard.number}
+              firstName={d.data.firstName}
+              lastName={d.data.lastName}
+              telephone={d.data.telephone}
+            />
+          ))
+        ) : (
+          <>
+            <TableRow loading />
+            <TableRow loading />
+            <TableRow loading />
+          </>
+        )}
+      </Flex>
+      <Heading as="h4" mt={6} align="center" justify="center">
+        <form onSubmit={handleSubmit} method="post">
+          <FormControl onChange={handleChange}>
+            <FormLabel htmlFor="firstName">First Name</FormLabel>
+            <Input
+              type="text"
+              name="firstName"
+              id="firstName"
+              onChange={handleChange}
+              aria-describedby="first-name-helper-text"
+            />
+            <FormLabel htmlFor="lastName">Last Name</FormLabel>
+            <Input
+              type="text"
+              id="lastName"
+              name="lastName"
+              onChange={handleChange}
+              aria-describedby="last-name-helper-text"
+            />
+            <FormLabel htmlFor="streetAddress">Street Address</FormLabel>
+            <Input
+              type="text"
+              id="streetAddress"
+              name="streetAddress"
+              onChange={handleChange}
+              aria-describedby="street-address-helper-text"
+            />
+            <Stack isInline mt={2}>
+              <FormLabel mt={2} htmlFor="city">
+                City
+              </FormLabel>
+              <Input
+                type="text"
+                id="city"
+                name="city"
+                onChange={handleChange}
+                aria-describedby="city-helper-text"
+              />
+              <FormLabel mt={2} htmlFor="state">
+                State
+              </FormLabel>
+              <Input
+                type="text"
+                id="state"
+                name="state"
+                onChange={handleChange}
+                aria-describedby="state-helper-text"
+              />
+              <FormLabel htmlFor="zipcode">Zip Code</FormLabel>
+              <Input
+                type="text"
+                name="zipcode"
+                id="zipcode"
+                onChange={handleChange}
+                aria-describedby="zipcode-helper-text"
+              />
+            </Stack>
+            <FormLabel htmlFor="phoneNumber">Phone Number</FormLabel>
+            <Input
+              type="text"
+              name="phoneNumber"
+              id="phoneNumber"
+              onChange={handleChange}
+              aria-describedby="phoneNumber-helper-text"
+            />
+            <RadioGroup name="cardType" my={4} spacing={8} isInline>
+              <Radio
+                onChange={handleChange}
+                name="Visa"
+                value="Visa"
+                label="Visa"
+              >
+                Visa
+              </Radio>
+              <Radio
+                onChange={handleChange}
+                name="MasterCard"
+                label="MasterCard"
+                value="MasterCard"
+              >
+                MasterCard
+              </Radio>
+              <Radio
+                onChange={handleChange}
+                name="Amex"
+                value="Amex"
+                label="Amex"
+              >
+                American Express
+              </Radio>
+            </RadioGroup>
+            <FormLabel htmlFor="cardNumber">Card Number</FormLabel>
+            <Input
+              type="number"
+              name="cardNumber"
+              id="cardNumber"
+              onChange={handleChange}
+              aria-describedby="cardNumber-helper-text"
+            />
+            <Button
+              type="submit"
+              my={8}
+              ml="20%"
+              width="50%"
+              size="md"
+              height="48px"
+              border="2px"
+              borderColor="green.500"
+            >
+              Add Customer
+            </Button>
+          </FormControl>
+        </form>
+      </Heading>
+    </Box>
+  );
 }
